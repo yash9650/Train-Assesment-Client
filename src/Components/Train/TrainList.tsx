@@ -7,6 +7,7 @@ const TrainList: React.FC = () => {
   const [trains, setTrains] = useState<any[]>([]);
   const [selectedTrain, setSelectedTrain] = useState<any>({});
   const [isLoadingTrain, setIsLoadingTrain] = useState<boolean>(false);
+  const [isResetingSeats, setIsResetingSeats] = useState<boolean>(false);
 
   useEffect(() => {
     getTrainList();
@@ -28,6 +29,30 @@ const TrainList: React.FC = () => {
       })
       .catch((err) => {
         setIsLoadingTrain(false);
+        toast.error(err.message);
+      });
+  };
+
+  const reset = () => {
+    if (!window.confirm("Are you sure you want to reset all seats?")) {
+      return;
+    }
+    setIsResetingSeats(true);
+    fetch("/train/reset-seats")
+      .then((res) => {
+        return res.json();
+      })
+      .then((data) => {
+        if (data.success) {
+          setIsResetingSeats(false);
+          toast.success(data.result);
+          getTrainList();
+        } else {
+          throw new Error(data.errorMessage);
+        }
+      })
+      .catch((err) => {
+        setIsResetingSeats(false);
         toast.error(err.message);
       });
   };
@@ -90,7 +115,23 @@ const TrainList: React.FC = () => {
           </div>
         </div>
       </div>
-      {isLoadingTrain && (
+      <div className="col-12 text-end mb-2">
+        <button className="btn btn-sm btn-danger" onClick={reset}>
+          {isResetingSeats ? (
+            <span
+              style={{
+                margin: "0px 34px",
+              }}
+              className="spinner-border spinner-border-sm"
+              role="status"
+              aria-hidden="true"
+            ></span>
+          ) : (
+            "Reset Seats"
+          )}
+        </button>
+      </div>
+      {isLoadingTrain ? (
         <div>
           <p className="placeholder-glow">
             <span
@@ -110,9 +151,9 @@ const TrainList: React.FC = () => {
             ></span>
           </p>
         </div>
+      ) : (
+        printTrainList()
       )}
-
-      {printTrainList()}
       {showBookingModal && (
         <TrainBookingModal
           show={showBookingModal}

@@ -5,7 +5,7 @@ import React from "react";
 import TrainList from "./Components/Train/TrainList";
 import { CustomNavbar } from "./Components/UI/CustomNavbar";
 import TrainTicketQueue from "./Components/Train/TrainTicketQueue";
-import { ToastContainer, toast } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 function App() {
   const router = createBrowserRouter([
