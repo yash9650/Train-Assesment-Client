@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { Modal, Tab, Tabs } from "react-bootstrap";
 import { TrainPassengerDetails } from "./TrainPassengerDetails";
 import { TrainConfirmation } from "./TrainConfirmation";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import TicketContext from "../../../Context/TicketContext";
 
 type ActiveKey =
   | "seat-count-tab"
@@ -21,8 +22,9 @@ export const TrainBookingModal: React.FC<{
   const [activeKey, setActiveKey] = useState<ActiveKey>("seat-count-tab");
   const [isBooking, setIsBooking] = useState<boolean>(false);
   const navigate = useNavigate();
+  const ticketContext = useContext(TicketContext);
 
-  const nextTabButton = (key: ActiveKey) => {
+  const nextTabButton = (key: ActiveKey, buttonTitle?: string) => {
     return (
       <div
         className="mt-2 text-end text-primary"
@@ -40,7 +42,7 @@ export const TrainBookingModal: React.FC<{
             }
           }}
         >
-          Next &gt;&gt;
+          {buttonTitle || "Next"} &gt;&gt;
         </span>
       </div>
     );
@@ -98,15 +100,15 @@ export const TrainBookingModal: React.FC<{
       .then((data) => {
         if (data.success) {
           toast.success("Ticket booked successfully");
-          const bookedSeats = data.result;
+          const bookedSeats: any[] = data.result;
           setIsBooking(false);
           props.onHide();
-          navigate("/ticket-queue", {
-            state: {
-              bookedSeats,
-              trainDetails: props.trainDetails,
-            },
-          });
+          let ticket = {
+            trainDetails: props.trainDetails,
+            bookedSeats,
+          };
+          ticketContext.setTicket(ticket);
+          navigate("/ticket-queue");
         } else {
           throw new Error(data.errorMessage);
         }
@@ -125,8 +127,12 @@ export const TrainBookingModal: React.FC<{
       </Modal.Header>
       <Modal.Body>
         <div className="container mb-4">
-          <Tabs activeKey={activeKey}>
-            <Tab title="Seat Count" eventKey="seat-count-tab">
+          <Tabs activeKey={activeKey} className="mb-3">
+            <Tab
+              title="Seat Count"
+              tabClassName="p-2"
+              eventKey="seat-count-tab"
+            >
               <div className="row mt-2">
                 <div className="col-6">
                   <h5 className="card-title">Train Name</h5>
@@ -168,16 +174,24 @@ export const TrainBookingModal: React.FC<{
               </div>
               {nextTabButton("passenger-details-tab")}
             </Tab>
-            <Tab title="PassengerDetails" eventKey="passenger-details-tab">
+            <Tab
+              title="Pax Details"
+              tabClassName="p-2"
+              eventKey="passenger-details-tab"
+            >
               <TrainPassengerDetails paxCount={parseInt(seatCount)} />
-              <div className="d-flex justify-content-between">
+              <div className="d-flex justify-content-between mt-2">
                 {prevTabButton("seat-count-tab")}
-                {nextTabButton("confirm-booking-tab")}
+                {nextTabButton("confirm-booking-tab", "Skip")}
               </div>
             </Tab>
-            <Tab title="Confirm Booking" eventKey="confirm-booking-tab">
+            <Tab
+              title="Confirm"
+              tabClassName="p-2"
+              eventKey="confirm-booking-tab"
+            >
               <TrainConfirmation paxCount={parseInt(seatCount)} />
-              <div className="d-flex justify-content-between">
+              <div className="d-flex justify-content-between mt-2">
                 {prevTabButton("passenger-details-tab")}
                 <div className="confirm-booking">
                   <button

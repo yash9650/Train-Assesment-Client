@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { TrainBookingModal } from "./SubComponents/TrainBookingModal";
 import { toast } from "react-toastify";
+import TicketContext from "../../Context/TicketContext";
 
 const TrainList: React.FC = () => {
   const [showBookingModal, setShowBookingModal] = useState(false);
@@ -8,6 +9,8 @@ const TrainList: React.FC = () => {
   const [selectedTrain, setSelectedTrain] = useState<any>({});
   const [isLoadingTrain, setIsLoadingTrain] = useState<boolean>(false);
   const [isResetingSeats, setIsResetingSeats] = useState<boolean>(false);
+
+  const { resetContext } = useContext(TicketContext);
 
   useEffect(() => {
     getTrainList();
@@ -46,6 +49,7 @@ const TrainList: React.FC = () => {
         if (data.success) {
           setIsResetingSeats(false);
           toast.success(data.result);
+          resetContext();
           getTrainList();
         } else {
           throw new Error(data.errorMessage);
@@ -72,16 +76,39 @@ const TrainList: React.FC = () => {
                 </span>
               </h6>
             </div>
-            <div className="col-6 text-end">
-              <button
-                className="btn btn-info"
-                onClick={() => {
-                  setSelectedTrain(train);
-                  setShowBookingModal(true);
-                }}
-              >
-                Book Now
-              </button>
+            <div className="col-6 d-flex justify-content-end">
+              <div className="me-2 text-center pe-2 border-end">
+                <div>{train.fromStation}</div>
+                <div className="">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    fill="currentColor"
+                    className="bi bi-arrow-down-up"
+                    viewBox="0 0 16 16"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M11.5 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L11 2.707V14.5a.5.5 0 0 0 .5.5zm-7-14a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L4 13.293V1.5a.5.5 0 0 1 .5-.5z"
+                    />
+                  </svg>
+                </div>
+                <div>{train.toStation}</div>
+              </div>
+              <div className="d-flex align-items-center">
+                <div>
+                  <button
+                    className="btn btn-sm btn-info"
+                    onClick={() => {
+                      setSelectedTrain(train);
+                      setShowBookingModal(true);
+                    }}
+                  >
+                    Book Now
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
